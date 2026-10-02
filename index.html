@@ -1,1 +1,258 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>WolfDecode</title>
+  <style>
+:root{color-scheme:dark;--bg:#0b0d10;--panel:#13171c;--panel2:#181e24;--text:#eef2f6;--muted:#9ca8b5;--line:#2a323b;--accent:#d8dee5;--good:#94d3a2;--warn:#e6c36b}*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at top,#151a20 0,#0b0d10 45%);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}.wrap{max-width:980px;margin:0 auto;padding:44px 20px 70px}.hero{margin-bottom:24px}.brand{font-size:clamp(2rem,6vw,4rem);font-weight:800;letter-spacing:-.04em}.tagline{font-size:1.05rem;color:var(--muted);margin:.5rem 0}.privacy{display:inline-block;margin:.25rem 0 0;padding:.45rem .65rem;border:1px solid var(--line);border-radius:999px;color:var(--good);font-size:.9rem}.card{background:rgba(19,23,28,.92);border:1px solid var(--line);border-radius:18px;padding:20px;margin-top:18px;box-shadow:0 20px 50px rgba(0,0,0,.18)}.card.small{font-size:.95rem}.card label{display:block;font-weight:700;margin-bottom:10px}textarea{width:100%;min-height:190px;resize:vertical;background:#090b0e;color:var(--text);border:1px solid var(--line);border-radius:14px;padding:14px;font:15px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;outline:none}textarea:focus{border-color:#57616d;box-shadow:0 0 0 3px rgba(255,255,255,.05)}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}button{border:0;border-radius:12px;padding:10px 15px;font-weight:700;cursor:pointer}.primary{background:#eef2f6;color:#0c0f12}.secondary{background:#20262d;color:var(--text);border:1px solid var(--line)}button:hover{filter:brightness(1.08)}.hidden{display:none}.resultHeader{display:flex;align-items:center;justify-content:space-between;gap:12px}.resultHeader h2{margin:0}.badge{background:#242c34;border:1px solid var(--line);border-radius:999px;padding:5px 9px;color:var(--muted);font-size:.85rem}.candidate{background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:14px;margin-top:12px}.candidate.top{border-color:#4a555f}.candidateTitle{display:flex;align-items:center;justify-content:space-between;gap:12px;font-weight:800}.confidence{font-size:.9rem;padding:4px 8px;border-radius:999px;background:#222a31}.reason{color:var(--muted);margin:.5rem 0}.preview{white-space:pre-wrap;word-break:break-word;background:#090b0e;border:1px solid var(--line);border-radius:10px;padding:12px;margin-top:8px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}.layerTitle{margin-top:22px;margin-bottom:4px;font-size:1rem;color:#cbd3db}.best{margin:12px 0 4px;padding:10px 12px;background:#11161b;border-left:3px solid var(--good);border-radius:8px}.note{color:var(--warn)}@media (max-width:640px){.wrap{padding-top:26px}.card{padding:16px}.candidateTitle{align-items:flex-start;flex-direction:column}.actions button{flex:1}}
 
+.offline-actions{display:flex;justify-content:flex-start;margin-bottom:16px}.offline-download{background:#20262d;color:var(--text);border:1px solid var(--accent)}.offline-download:focus-visible{outline:3px solid var(--good);outline-offset:3px}
+</style>
+</head>
+<body>
+  <main class="wrap">
+    <div class="offline-actions"><button type="button" id="downloadOffline" class="offline-download" title="Save a standalone HTML copy to open without an internet connection">Download for offline use</button></div>
+    <section class="hero">
+      <div class="brand">🐺 WolfDecode</div>
+      <p class="tagline">Fast encoding triage for SOC, DFIR, threat hunting, and malware analysis.</p>
+      <p class="privacy">Runs locally in your browser. Nothing you paste is sent anywhere.</p>
+    </section>
+
+    <section class="card">
+      <label for="inputText">Paste encoded text</label>
+      <textarea id="inputText" spellcheck="false" placeholder="Example: SGVsbG8="></textarea>
+      <div class="actions">
+        <button id="analyzeBtn" class="primary">Analyze</button>
+        <button id="clearBtn" class="secondary">Clear</button>
+        <button id="sampleBtn" class="secondary">Load Sample</button>
+      </div>
+    </section>
+
+    <section id="results" class="card hidden">
+      <div class="resultHeader">
+        <h2>Analysis</h2>
+        <span id="layerBadge" class="badge"></span>
+      </div>
+      <div id="summary"></div>
+      <div id="layers"></div>
+    </section>
+
+    <section class="card small">
+      <h3>Current detection</h3>
+      <p>Base64, Base64URL, JWT, Hex, URL encoding, HTML entities, binary, escaped hex, Unicode escapes, and layered encodings.</p>
+      <p class="note">WolfDecode gives likely matches, not guarantees. Verify the result before using it.</p>
+    </section>
+  </main>
+
+  <script>
+// Keep the offline app clean: capture it before initialization or pasted data.
+const offlineAppHtml='<!doctype html>\n'+document.documentElement.outerHTML;
+document.getElementById('downloadOffline').addEventListener('click',()=>{
+  const url=URL.createObjectURL(new Blob([offlineAppHtml],{type:'text/html;charset=utf-8'}));
+  const link=document.createElement('a');
+  link.href=url;
+  link.download='WolfDecode_Offline.html';
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+});
+const $ = (id) => document.getElementById(id);
+
+function printableRatio(text){
+  if(!text) return 0;
+  let n=0;
+  for(const ch of text){
+    const c=ch.charCodeAt(0);
+    if(ch==='\n'||ch==='\r'||ch==='\t'||(c>=32&&c<=126)) n++;
+  }
+  return n/text.length;
+}
+
+function decodeUtf8(bytes){
+  try{return new TextDecoder('utf-8',{fatal:true}).decode(bytes);}catch{}
+  try{return new TextDecoder('utf-16').decode(bytes);}catch{}
+  try{return new TextDecoder('latin1').decode(bytes);}catch{}
+  return null;
+}
+
+function scoreReadability(text){
+  if(text==null) return 0;
+  const r=printableRatio(text);
+  if(r>=.95) return 25;
+  if(r>=.80) return 15;
+  if(r>=.60) return 5;
+  return 0;
+}
+
+function bytesFromBase64(s){
+  const bin=atob(s);
+  return Uint8Array.from(bin, c=>c.charCodeAt(0));
+}
+
+function detectBase64(v){
+  const s=v.replace(/\s+/g,'');
+  if(s.length<4 || !/^[A-Za-z0-9+/]*={0,2}$/.test(s) || s.length%4!==0) return null;
+  try{
+    const text=decodeUtf8(bytesFromBase64(s));
+    let confidence=45;
+    const reasons=['valid Base64 character set','length divisible by 4'];
+    if(s.endsWith('=')){confidence+=10;reasons.push('standard Base64 padding present');}
+    if(text!=null){confidence+=scoreReadability(text);if(printableRatio(text)>=.8)reasons.push('decoded output is mostly readable text');}
+    return {name:'Base64',confidence:Math.min(confidence,95),reason:reasons.join(', '),decoded:text};
+  }catch{return null;}
+}
+
+function detectBase64Url(v){
+  const s=v.replace(/\s+/g,'');
+  if(s.length<4 || !/^[A-Za-z0-9_-]+={0,2}$/.test(s) || /[+/]/.test(s)) return null;
+  try{
+    let b64=s.replace(/-/g,'+').replace(/_/g,'/');
+    b64 += '='.repeat((4-b64.length%4)%4);
+    const text=decodeUtf8(bytesFromBase64(b64));
+    let confidence=40;
+    const reasons=['valid Base64URL character set'];
+    if(/[-_]/.test(s)){confidence+=15;reasons.push('URL-safe alphabet detected');}
+    if(text!=null){confidence+=scoreReadability(text);if(printableRatio(text)>=.8)reasons.push('decoded output is mostly readable text');}
+    return {name:'Base64URL',confidence:Math.min(confidence,90),reason:reasons.join(', '),decoded:text};
+  }catch{return null;}
+}
+
+function decodeBase64UrlPart(s){
+  let b64=s.replace(/-/g,'+').replace(/_/g,'/');
+  b64 += '='.repeat((4-b64.length%4)%4);
+  return decodeUtf8(bytesFromBase64(b64));
+}
+
+function detectJwt(v){
+  const parts=v.trim().split('.');
+  if(parts.length!==3) return null;
+  try{
+    const h=decodeBase64UrlPart(parts[0]);
+    const p=decodeBase64UrlPart(parts[1]);
+    JSON.parse(h); JSON.parse(p);
+    return {name:'JWT / Base64URL',confidence:99,reason:'three dot-separated segments with JSON header and payload',decoded:`HEADER: ${h}\nPAYLOAD: ${p}`};
+  }catch{return null;}
+}
+
+function detectHex(v){
+  const s=v.replace(/\s+/g,'');
+  if(s.length<4 || s.length%2!==0 || !/^[0-9a-fA-F]+$/.test(s)) return null;
+  try{
+    const bytes=new Uint8Array(s.match(/../g).map(x=>parseInt(x,16)));
+    const text=decodeUtf8(bytes);
+    let confidence=55;
+    const reasons=['only hexadecimal characters','even number of characters'];
+    if(text!=null){confidence+=scoreReadability(text);if(printableRatio(text)>=.8)reasons.push('decoded bytes produce mostly readable text');}
+    return {name:'Hex',confidence:Math.min(confidence,95),reason:reasons.join(', '),decoded:text};
+  }catch{return null;}
+}
+
+function detectUrl(v){
+  const m=v.match(/%[0-9a-fA-F]{2}/g);
+  if(!m) return null;
+  try{
+    const text=decodeURIComponent(v);
+    if(text===v) return null;
+    return {name:'URL Encoding',confidence:Math.min(60+m.length*4,95),reason:`found ${m.length} percent-encoded byte sequence(s)`,decoded:text};
+  }catch{return null;}
+}
+
+function detectHtml(v){
+  const m=v.match(/&(?:#\d+|#x[0-9a-fA-F]+|[A-Za-z][A-Za-z0-9]+);/g);
+  if(!m) return null;
+  const ta=document.createElement('textarea'); ta.innerHTML=v; const text=ta.value;
+  if(text===v) return null;
+  return {name:'HTML Entities',confidence:Math.min(60+m.length*5,95),reason:`found ${m.length} HTML entity reference(s)`,decoded:text};
+}
+
+function detectBinary(v){
+  const s=v.replace(/[\s_]+/g,'');
+  if(s.length<8 || s.length%8!==0 || !/^[01]+$/.test(s)) return null;
+  try{
+    const bytes=[]; for(let i=0;i<s.length;i+=8) bytes.push(parseInt(s.slice(i,i+8),2));
+    const text=decodeUtf8(new Uint8Array(bytes));
+    let confidence=65; const reasons=['contains only 0 and 1','bit length divisible by 8'];
+    if(text!=null){confidence+=scoreReadability(text);if(printableRatio(text)>=.8)reasons.push('decoded bytes produce mostly readable text');}
+    return {name:'Binary (8-bit bytes)',confidence:Math.min(confidence,95),reason:reasons.join(', '),decoded:text};
+  }catch{return null;}
+}
+
+function detectEscapedHex(v){
+  const m=[...v.matchAll(/\\x([0-9a-fA-F]{2})/g)];
+  if(!m.length) return null;
+  const bytes=new Uint8Array(m.map(x=>parseInt(x[1],16)));
+  const text=decodeUtf8(bytes);
+  return {name:'Escaped Hex (\\xNN)',confidence:Math.min(70+m.length*2,98),reason:`found ${m.length} escaped hexadecimal byte(s)`,decoded:text};
+}
+
+function detectUnicode(v){
+  const m=[...v.matchAll(/\\u([0-9a-fA-F]{4})/g)];
+  if(!m.length) return null;
+  const text=v.replace(/\\u([0-9a-fA-F]{4})/g,(_,x)=>String.fromCharCode(parseInt(x,16)));
+  return {name:'Unicode Escape (\\uNNNN)',confidence:Math.min(70+m.length*2,98),reason:`found ${m.length} Unicode escape sequence(s)`,decoded:text};
+}
+
+function analyze(v){
+  const detectors=[detectJwt,detectEscapedHex,detectUnicode,detectUrl,detectHtml,detectBinary,detectHex,detectBase64,detectBase64Url];
+  const out=[]; const seen=new Set();
+  for(const fn of detectors){
+    const c=fn(v);
+    if(c && !seen.has(c.name)){seen.add(c.name);out.push(c);}
+  }
+  return out.sort((a,b)=>b.confidence-a.confidence);
+}
+
+function layeredAnalysis(v,maxDepth=3){
+  const layers=[]; let current=v;
+  for(let depth=0; depth<maxDepth; depth++){
+    const candidates=analyze(current);
+    if(!candidates.length) break;
+    const best=candidates[0];
+    layers.push({depth,input:current,candidates});
+    if(best.decoded==null || best.decoded===current) break;
+    current=best.decoded;
+  }
+  return layers;
+}
+
+function esc(s){
+  return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+}
+
+function render(){
+  const input=$('inputText').value.trim();
+  if(!input){$('results').classList.add('hidden'); return;}
+  const layers=layeredAnalysis(input,3);
+  $('results').classList.remove('hidden');
+  $('layerBadge').textContent = layers.length ? `${layers.length} layer${layers.length>1?'s':''}` : 'No strong match';
+
+  if(!layers.length){
+    $('summary').innerHTML='<div class="best">No strong encoding pattern detected. Treat as unknown/plain text and verify manually.</div>';
+    $('layers').innerHTML='';
+    return;
+  }
+
+  const top=layers[0].candidates[0];
+  $('summary').innerHTML=`<div class="best"><strong>Most likely:</strong> ${esc(top.name)} — ${top.confidence}%<br><strong>Next step:</strong> verify with a ${esc(top.name)} decoder.</div>`;
+
+  $('layers').innerHTML=layers.map((layer,i)=>{
+    const cards=layer.candidates.map((c,idx)=>`
+      <div class="candidate ${idx===0?'top':''}">
+        <div class="candidateTitle"><span>${idx===0?'★ ':''}${esc(c.name)}</span><span class="confidence">${c.confidence}% likely</span></div>
+        <div class="reason">Why: ${esc(c.reason)}</div>
+        ${c.decoded!=null?`<div class="preview">${esc(c.decoded.length>2000?c.decoded.slice(0,2000)+'\n... [truncated]':c.decoded)}</div>`:''}
+      </div>`).join('');
+    return `<div class="layerTitle">Layer ${i+1}</div>${cards}`;
+  }).join('');
+}
+
+$('analyzeBtn').addEventListener('click',render);
+$('clearBtn').addEventListener('click',()=>{$('inputText').value='';$('results').classList.add('hidden');$('inputText').focus();});
+$('sampleBtn').addEventListener('click',()=>{$('inputText').value='NDg2NTZjNmM2Zg==';render();});
+$('inputText').addEventListener('keydown',(e)=>{if((e.ctrlKey||e.metaKey)&&e.key==='Enter')render();});
+$('inputText').focus();
+</script>
+</body>
+</html>
