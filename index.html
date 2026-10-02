@@ -1,258 +1,47 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>WolfDecode</title>
-  <style>
-:root{color-scheme:dark;--bg:#0b0d10;--panel:#13171c;--panel2:#181e24;--text:#eef2f6;--muted:#9ca8b5;--line:#2a323b;--accent:#d8dee5;--good:#94d3a2;--warn:#e6c36b}*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at top,#151a20 0,#0b0d10 45%);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}.wrap{max-width:980px;margin:0 auto;padding:44px 20px 70px}.hero{margin-bottom:24px}.brand{font-size:clamp(2rem,6vw,4rem);font-weight:800;letter-spacing:-.04em}.tagline{font-size:1.05rem;color:var(--muted);margin:.5rem 0}.privacy{display:inline-block;margin:.25rem 0 0;padding:.45rem .65rem;border:1px solid var(--line);border-radius:999px;color:var(--good);font-size:.9rem}.card{background:rgba(19,23,28,.92);border:1px solid var(--line);border-radius:18px;padding:20px;margin-top:18px;box-shadow:0 20px 50px rgba(0,0,0,.18)}.card.small{font-size:.95rem}.card label{display:block;font-weight:700;margin-bottom:10px}textarea{width:100%;min-height:190px;resize:vertical;background:#090b0e;color:var(--text);border:1px solid var(--line);border-radius:14px;padding:14px;font:15px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;outline:none}textarea:focus{border-color:#57616d;box-shadow:0 0 0 3px rgba(255,255,255,.05)}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}button{border:0;border-radius:12px;padding:10px 15px;font-weight:700;cursor:pointer}.primary{background:#eef2f6;color:#0c0f12}.secondary{background:#20262d;color:var(--text);border:1px solid var(--line)}button:hover{filter:brightness(1.08)}.hidden{display:none}.resultHeader{display:flex;align-items:center;justify-content:space-between;gap:12px}.resultHeader h2{margin:0}.badge{background:#242c34;border:1px solid var(--line);border-radius:999px;padding:5px 9px;color:var(--muted);font-size:.85rem}.candidate{background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:14px;margin-top:12px}.candidate.top{border-color:#4a555f}.candidateTitle{display:flex;align-items:center;justify-content:space-between;gap:12px;font-weight:800}.confidence{font-size:.9rem;padding:4px 8px;border-radius:999px;background:#222a31}.reason{color:var(--muted);margin:.5rem 0}.preview{white-space:pre-wrap;word-break:break-word;background:#090b0e;border:1px solid var(--line);border-radius:10px;padding:12px;margin-top:8px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}.layerTitle{margin-top:22px;margin-bottom:4px;font-size:1rem;color:#cbd3db}.best{margin:12px 0 4px;padding:10px 12px;background:#11161b;border-left:3px solid var(--good);border-radius:8px}.note{color:var(--warn)}@media (max-width:640px){.wrap{padding-top:26px}.card{padding:16px}.candidateTitle{align-items:flex-start;flex-direction:column}.actions button{flex:1}}
-
-.offline-actions{display:flex;justify-content:flex-start;margin-bottom:16px}.offline-download{background:#20262d;color:var(--text);border:1px solid var(--accent)}.offline-download:focus-visible{outline:3px solid var(--good);outline-offset:3px}
-</style>
-</head>
-<body>
-  <main class="wrap">
-    <div class="offline-actions"><button type="button" id="downloadOffline" class="offline-download" title="Save a standalone HTML copy to open without an internet connection">Download for offline use</button></div>
-    <section class="hero">
-      <div class="brand">WolfDecode</div>
-      <p class="tagline">Fast encoding triage for SOC, DFIR, threat hunting, and malware analysis.</p>
-      <p class="privacy">Runs locally in your browser. Nothing you paste is sent anywhere.</p>
-    </section>
-
-    <section class="card">
-      <label for="inputText">Paste encoded text</label>
-      <textarea id="inputText" spellcheck="false" placeholder="Example: SGVsbG8="></textarea>
-      <div class="actions">
-        <button id="analyzeBtn" class="primary">Analyze</button>
-        <button id="clearBtn" class="secondary">Clear</button>
-        <button id="sampleBtn" class="secondary">Load Sample</button>
-      </div>
-    </section>
-
-    <section id="results" class="card hidden">
-      <div class="resultHeader">
-        <h2>Analysis</h2>
-        <span id="layerBadge" class="badge"></span>
-      </div>
-      <div id="summary"></div>
-      <div id="layers"></div>
-    </section>
-
-    <section class="card small">
-      <h3>Current detection</h3>
-      <p>Base64, Base64URL, JWT, Hex, URL encoding, HTML entities, binary, escaped hex, Unicode escapes, and layered encodings.</p>
-      <p class="note">WolfDecode gives likely matches, not guarantees. Verify the result before using it.</p>
-    </section>
-  </main>
-
-  <script>
-// Keep the offline app clean: capture it before initialization or pasted data.
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>WolfDecode Phase 1.10.1</title>
+<style>:root{color-scheme:dark}*{box-sizing:border-box}body{margin:0;background:#0b0f14;color:#e7edf4;font:15px system-ui,Segoe UI,Arial}main{max-width:1250px;margin:auto;padding:28px}.panel{background:#121922;border:1px solid #2a3542;border-radius:14px;padding:18px;margin:16px 0}h1{margin-bottom:4px}.muted{color:#98a8b8}textarea{width:100%;min-height:190px;background:#090d12;color:#e7edf4;border:1px solid #2a3542;border-radius:9px;padding:12px;font:14px Consolas,monospace;resize:vertical}.controls{display:grid;grid-template-columns:1fr auto auto auto;gap:10px;margin:12px 0}select,button{background:#0d131a;color:#e7edf4;border:1px solid #2a3542;border-radius:8px;padding:11px}button{cursor:pointer;font-weight:650}.primary{background:#e7edf4;color:#0b0f14}.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.workspace{display:grid;grid-template-columns:minmax(0,2fr) minmax(300px,1fr);gap:16px;align-items:start}.history{max-height:720px;overflow:auto}.history-item{background:#0d131a;border:1px solid #2a3542;border-radius:9px;padding:11px;margin:10px 0}.history-item button{width:100%;text-align:left;padding:8px;margin-top:8px}.history-meta{font-size:12px;color:#98a8b8}.history-preview{font:12px Consolas,monospace;white-space:pre-wrap;overflow-wrap:anywhere;margin-top:6px}.history-head{display:flex;justify-content:space-between;gap:10px;align-items:center}.history-head button{width:auto;margin:0;padding:7px 9px}.status{color:#98a8b8}.ok{color:#9ed6ae}.err{color:#ffaaa5}@media(max-width:850px){.workspace,.grid{grid-template-columns:1fr}.controls{grid-template-columns:1fr 1fr}} .track-actions{display:flex;justify-content:flex-end;gap:10px;margin:16px 0 8px}.track-actions button{white-space:nowrap}
+.offline-actions{display:flex;justify-content:flex-start;margin-bottom:16px}.offline-download{border-color:#98a8b8}.offline-download:focus-visible{outline:3px solid #9ed6ae;outline-offset:3px}
+</style></head>
+<body><main><div class="offline-actions"><button type="button" id="downloadOffline" class="offline-download" title="Save the app for offline use">Download for offline use</button></div><h1>WolfDecode</h1><div class="muted">Phase 1.10.1 • Offline single-layer decoder • Local browser only</div>
+<div class="workspace"><div><div class="panel"><b>Input</b><textarea id="i" placeholder="Paste encoded text here..." spellcheck="false"></textarea>
+<div style="margin-top:14px"><b>Encoding Detection</b><div id="detect" class="muted" style="margin-top:8px">Paste input to analyze likely encoding.</div></div>
+<div class="controls"><select id="d"><option value="b64">Base64</option><option value="hex">Hex</option><option value="url">URL Encoding</option><option value="b32">Base32</option><option value="bin">Binary (8-bit)</option><option value="dec">ASCII Decimal</option><option value="rot">ROT13</option><option value="html">HTML Entities</option></select><button class="primary" id="go">Decode</button><button id="swap">Output → Input</button><button id="clear">Clear</button></div><div id="s" class="status">Ready. No data leaves this page.</div></div>
+<div class="grid"><div class="panel"><b>Output</b><textarea id="o" readonly spellcheck="false"></textarea></div><div class="panel"><b>Phase 1.10.1</b><p class="muted">Manual decoder selection, one layer at a time. Invalid input returns an error instead of guessing.</p><p class="muted">Use Output → Input to manually test layered strings.</p><p class="muted">Decode Track records successful steps so you can restore an earlier layer if needed.</p></div></div></div>
+<div><div class="track-actions"><button id="saveHistory">Save .txt</button><button id="clearHistory">Clear History</button></div><div class="panel history" style="margin-top:8px"><div class="history-head"><b>Decode Track</b></div><p class="muted" style="font-size:12px">Successful decodes are recorded here. Restore any step to backtrack.</p><div id="history"><div class="muted">No decode steps yet.</div></div></div></div></div><div class="panel" style="font-size:12px"><b>Privacy Disclaimer</b><p class="muted">WolfDecode runs locally in your browser. It does not upload, transmit, or remotely store the input, output, or Decode Track. Nothing is recorded by WolfDecode on the developer end. Data is saved to your device only when you choose <b>Save .txt</b>. Avoid saving sensitive data unless you intend to keep a local copy.</p></div>
+<script>
+// Capture the clean app before input, output, or Decode Track changes.
 const offlineAppHtml='<!doctype html>\n'+document.documentElement.outerHTML;
-document.getElementById('downloadOffline').addEventListener('click',()=>{
-  const url=URL.createObjectURL(new Blob([offlineAppHtml],{type:'text/html;charset=utf-8'}));
-  const link=document.createElement('a');
-  link.href=url;
-  link.download='WolfDecode_Offline.html';
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-  setTimeout(()=>URL.revokeObjectURL(url),1000);
-});
-const $ = (id) => document.getElementById(id);
+document.getElementById("downloadOffline").onclick=()=>{const u=URL.createObjectURL(new Blob([offlineAppHtml],{type:"text/html;charset=utf-8"}));const a=document.createElement("a");a.href=u;a.download="WolfDecode_Phase1.10.1_Offline.html";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),1000)};
 
-function printableRatio(text){
-  if(!text) return 0;
-  let n=0;
-  for(const ch of text){
-    const c=ch.charCodeAt(0);
-    if(ch==='\n'||ch==='\r'||ch==='\t'||(c>=32&&c<=126)) n++;
-  }
-  return n/text.length;
-}
-
-function decodeUtf8(bytes){
-  try{return new TextDecoder('utf-8',{fatal:true}).decode(bytes);}catch{}
-  try{return new TextDecoder('utf-16').decode(bytes);}catch{}
-  try{return new TextDecoder('latin1').decode(bytes);}catch{}
-  return null;
-}
-
-function scoreReadability(text){
-  if(text==null) return 0;
-  const r=printableRatio(text);
-  if(r>=.95) return 25;
-  if(r>=.80) return 15;
-  if(r>=.60) return 5;
-  return 0;
-}
-
-function bytesFromBase64(s){
-  const bin=atob(s);
-  return Uint8Array.from(bin, c=>c.charCodeAt(0));
-}
-
-function detectBase64(v){
-  const s=v.replace(/\s+/g,'');
-  if(s.length<4 || !/^[A-Za-z0-9+/]*={0,2}$/.test(s) || s.length%4!==0) return null;
-  try{
-    const text=decodeUtf8(bytesFromBase64(s));
-    let confidence=45;
-    const reasons=['valid Base64 character set','length divisible by 4'];
-    if(s.endsWith('=')){confidence+=10;reasons.push('standard Base64 padding present');}
-    if(text!=null){confidence+=scoreReadability(text);if(printableRatio(text)>=.8)reasons.push('decoded output is mostly readable text');}
-    return {name:'Base64',confidence:Math.min(confidence,95),reason:reasons.join(', '),decoded:text};
-  }catch{return null;}
-}
-
-function detectBase64Url(v){
-  const s=v.replace(/\s+/g,'');
-  if(s.length<4 || !/^[A-Za-z0-9_-]+={0,2}$/.test(s) || /[+/]/.test(s)) return null;
-  try{
-    let b64=s.replace(/-/g,'+').replace(/_/g,'/');
-    b64 += '='.repeat((4-b64.length%4)%4);
-    const text=decodeUtf8(bytesFromBase64(b64));
-    let confidence=40;
-    const reasons=['valid Base64URL character set'];
-    if(/[-_]/.test(s)){confidence+=15;reasons.push('URL-safe alphabet detected');}
-    if(text!=null){confidence+=scoreReadability(text);if(printableRatio(text)>=.8)reasons.push('decoded output is mostly readable text');}
-    return {name:'Base64URL',confidence:Math.min(confidence,90),reason:reasons.join(', '),decoded:text};
-  }catch{return null;}
-}
-
-function decodeBase64UrlPart(s){
-  let b64=s.replace(/-/g,'+').replace(/_/g,'/');
-  b64 += '='.repeat((4-b64.length%4)%4);
-  return decodeUtf8(bytesFromBase64(b64));
-}
-
-function detectJwt(v){
-  const parts=v.trim().split('.');
-  if(parts.length!==3) return null;
-  try{
-    const h=decodeBase64UrlPart(parts[0]);
-    const p=decodeBase64UrlPart(parts[1]);
-    JSON.parse(h); JSON.parse(p);
-    return {name:'JWT / Base64URL',confidence:99,reason:'three dot-separated segments with JSON header and payload',decoded:`HEADER: ${h}\nPAYLOAD: ${p}`};
-  }catch{return null;}
-}
-
-function detectHex(v){
-  const s=v.replace(/\s+/g,'');
-  if(s.length<4 || s.length%2!==0 || !/^[0-9a-fA-F]+$/.test(s)) return null;
-  try{
-    const bytes=new Uint8Array(s.match(/../g).map(x=>parseInt(x,16)));
-    const text=decodeUtf8(bytes);
-    let confidence=55;
-    const reasons=['only hexadecimal characters','even number of characters'];
-    if(text!=null){confidence+=scoreReadability(text);if(printableRatio(text)>=.8)reasons.push('decoded bytes produce mostly readable text');}
-    return {name:'Hex',confidence:Math.min(confidence,95),reason:reasons.join(', '),decoded:text};
-  }catch{return null;}
-}
-
-function detectUrl(v){
-  const m=v.match(/%[0-9a-fA-F]{2}/g);
-  if(!m) return null;
-  try{
-    const text=decodeURIComponent(v);
-    if(text===v) return null;
-    return {name:'URL Encoding',confidence:Math.min(60+m.length*4,95),reason:`found ${m.length} percent-encoded byte sequence(s)`,decoded:text};
-  }catch{return null;}
-}
-
-function detectHtml(v){
-  const m=v.match(/&(?:#\d+|#x[0-9a-fA-F]+|[A-Za-z][A-Za-z0-9]+);/g);
-  if(!m) return null;
-  const ta=document.createElement('textarea'); ta.innerHTML=v; const text=ta.value;
-  if(text===v) return null;
-  return {name:'HTML Entities',confidence:Math.min(60+m.length*5,95),reason:`found ${m.length} HTML entity reference(s)`,decoded:text};
-}
-
-function detectBinary(v){
-  const s=v.replace(/[\s_]+/g,'');
-  if(s.length<8 || s.length%8!==0 || !/^[01]+$/.test(s)) return null;
-  try{
-    const bytes=[]; for(let i=0;i<s.length;i+=8) bytes.push(parseInt(s.slice(i,i+8),2));
-    const text=decodeUtf8(new Uint8Array(bytes));
-    let confidence=65; const reasons=['contains only 0 and 1','bit length divisible by 8'];
-    if(text!=null){confidence+=scoreReadability(text);if(printableRatio(text)>=.8)reasons.push('decoded bytes produce mostly readable text');}
-    return {name:'Binary (8-bit bytes)',confidence:Math.min(confidence,95),reason:reasons.join(', '),decoded:text};
-  }catch{return null;}
-}
-
-function detectEscapedHex(v){
-  const m=[...v.matchAll(/\\x([0-9a-fA-F]{2})/g)];
-  if(!m.length) return null;
-  const bytes=new Uint8Array(m.map(x=>parseInt(x[1],16)));
-  const text=decodeUtf8(bytes);
-  return {name:'Escaped Hex (\\xNN)',confidence:Math.min(70+m.length*2,98),reason:`found ${m.length} escaped hexadecimal byte(s)`,decoded:text};
-}
-
-function detectUnicode(v){
-  const m=[...v.matchAll(/\\u([0-9a-fA-F]{4})/g)];
-  if(!m.length) return null;
-  const text=v.replace(/\\u([0-9a-fA-F]{4})/g,(_,x)=>String.fromCharCode(parseInt(x,16)));
-  return {name:'Unicode Escape (\\uNNNN)',confidence:Math.min(70+m.length*2,98),reason:`found ${m.length} Unicode escape sequence(s)`,decoded:text};
-}
-
-function analyze(v){
-  const detectors=[detectJwt,detectEscapedHex,detectUnicode,detectUrl,detectHtml,detectBinary,detectHex,detectBase64,detectBase64Url];
-  const out=[]; const seen=new Set();
-  for(const fn of detectors){
-    const c=fn(v);
-    if(c && !seen.has(c.name)){seen.add(c.name);out.push(c);}
-  }
-  return out.sort((a,b)=>b.confidence-a.confidence);
-}
-
-function layeredAnalysis(v,maxDepth=3){
-  const layers=[]; let current=v;
-  for(let depth=0; depth<maxDepth; depth++){
-    const candidates=analyze(current);
-    if(!candidates.length) break;
-    const best=candidates[0];
-    layers.push({depth,input:current,candidates});
-    if(best.decoded==null || best.decoded===current) break;
-    current=best.decoded;
-  }
-  return layers;
-}
-
-function esc(s){
-  return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
-}
-
-function render(){
-  const input=$('inputText').value.trim();
-  if(!input){$('results').classList.add('hidden'); return;}
-  const layers=layeredAnalysis(input,3);
-  $('results').classList.remove('hidden');
-  $('layerBadge').textContent = layers.length ? `${layers.length} layer${layers.length>1?'s':''}` : 'No strong match';
-
-  if(!layers.length){
-    $('summary').innerHTML='<div class="best">No strong encoding pattern detected. Treat as unknown/plain text and verify manually.</div>';
-    $('layers').innerHTML='';
-    return;
-  }
-
-  const top=layers[0].candidates[0];
-  $('summary').innerHTML=`<div class="best"><strong>Most likely:</strong> ${esc(top.name)} — ${top.confidence}%<br><strong>Next step:</strong> verify with a ${esc(top.name)} decoder.</div>`;
-
-  $('layers').innerHTML=layers.map((layer,i)=>{
-    const cards=layer.candidates.map((c,idx)=>`
-      <div class="candidate ${idx===0?'top':''}">
-        <div class="candidateTitle"><span>${idx===0?'★ ':''}${esc(c.name)}</span><span class="confidence">${c.confidence}% likely</span></div>
-        <div class="reason">Why: ${esc(c.reason)}</div>
-        ${c.decoded!=null?`<div class="preview">${esc(c.decoded.length>2000?c.decoded.slice(0,2000)+'\n... [truncated]':c.decoded)}</div>`:''}
-      </div>`).join('');
-    return `<div class="layerTitle">Layer ${i+1}</div>${cards}`;
-  }).join('');
-}
-
-$('analyzeBtn').addEventListener('click',render);
-$('clearBtn').addEventListener('click',()=>{$('inputText').value='';$('results').classList.add('hidden');$('inputText').focus();});
-$('sampleBtn').addEventListener('click',()=>{$('inputText').value='NDg2NTZjNmM2Zg==';render();});
-$('inputText').addEventListener('keydown',(e)=>{if((e.ctrlKey||e.metaKey)&&e.key==='Enter')render();});
-$('inputText').focus();
-</script>
-</body>
-</html>
+const $=x=>document.getElementById(x),I=$("i"),O=$("o"),D=$("d"),S=$("s");
+function txt(a){try{return new TextDecoder("utf-8",{fatal:true}).decode(new Uint8Array(a))}catch(e){throw Error("Decoded bytes are not valid UTF-8 text.")}}
+function b64(s){s=s.replace(/\s+/g,"");if(!s)throw Error("Input is empty.");if(!/^[A-Za-z0-9+/]*={0,2}$/.test(s)||s.length%4===1)throw Error("Invalid Base64.");s+="=".repeat((4-s.length%4)%4);let r;try{r=atob(s)}catch(e){throw Error("Invalid Base64.");}return txt([...r].map(c=>c.charCodeAt(0)))}
+function hex(s){s=s.replace(/0x/gi,"").replace(/\s+/g,"");if(!s)throw Error("Input is empty.");if(!/^[0-9a-f]+$/i.test(s)||s.length%2)throw Error("Hex must contain complete byte pairs.");return txt((s.match(/../g)||[]).map(x=>parseInt(x,16)))}
+function url(s){if(!s)throw Error("Input is empty.");try{return decodeURIComponent(s.replace(/\+/g," "))}catch(e){throw Error("Invalid URL encoding.")}}
+function b32(s){s=s.toUpperCase().replace(/\s+/g,"").replace(/=+$/,"");if(!s)throw Error("Input is empty.");if(!/^[A-Z2-7]+$/.test(s))throw Error("Invalid Base32.");let A="ABCDEFGHIJKLMNOPQRSTUVWXYZ234567",b="";for(let c of s)b+=A.indexOf(c).toString(2).padStart(5,"0");let a=[];for(let x=0;x+8<=b.length;x+=8)a.push(parseInt(b.slice(x,x+8),2));if(/1/.test(b.slice(a.length*8)))throw Error("Invalid Base32 padding bits.");return txt(a)}
+function bin(s){if(!s.trim())throw Error("Input is empty.");let a=s.trim().split(/[\s,]+/).filter(Boolean);if(a.length===1&&/^[01]+$/.test(a[0])&&a[0].length>8){if(a[0].length%8)throw Error("Binary length must be multiple of 8.");a=a[0].match(/.{8}/g)}if(a.some(x=>!/^[01]{8}$/.test(x)))throw Error("Use complete 8-bit groups.");return txt(a.map(x=>parseInt(x,2)))}
+function dec(s){if(!s.trim())throw Error("Input is empty.");let a=s.trim().split(/[\s,]+/).filter(Boolean);if(a.some(x=>!/^\d{1,3}$/.test(x)||+x>255))throw Error("Decimal bytes must be 0–255.");return txt(a.map(Number))}
+function rot(s){if(!s)throw Error("Input is empty.");return s.replace(/[A-Za-z]/g,c=>String.fromCharCode((c<="Z"?65:97)+(c.charCodeAt(0)-(c<="Z"?65:97)+13)%26))}
+function html(s){if(!s)throw Error("Input is empty.");let t=document.createElement("textarea");t.innerHTML=s;return t.value}
+function printableScore(t){if(!t.length)return 0;let good=[...t].filter(c=>{let n=c.charCodeAt(0);return n===9||n===10||n===13||(n>=32&&n<=126)}).length;return good/t.length}
+function safe(fn,s){try{return {ok:true,out:fn(s)}}catch(e){return {ok:false,out:""}}}
+function scores(raw){let s=raw.trim(),R=[];if(!s)return [];let compact=s.replace(/\s+/g,"");
+let b64r=safe(b64,s),b64syntax=/^[A-Za-z0-9+/]*={0,2}$/.test(compact)&&compact.length>=4&&compact.length%4!==1;let b64score=(b64syntax&&b64r.ok)?55:0;if(b64score&&compact.length%4===0)b64score+=10;if(b64score&&/={1,2}$/.test(compact))b64score+=8;if(b64score)b64score+=Math.round(27*printableScore(b64r.out));R.push(["Base64",Math.min(100,b64score)]);
+let hx=s.replace(/0x/gi,"").replace(/\s+/g,""),hr=safe(hex,s),hexchars=/^[0-9a-f]+$/i.test(hx)&&hx.length>=2,hs=0;if(hexchars&&hx.length%2===0&&hr.ok){hs=73;hs+=Math.round(27*printableScore(hr.out))}R.push(["Hex",Math.min(100,hs)]);
+let pct=(s.match(/%[0-9a-fA-F]{2}/g)||[]).length,ur=safe(url,s);let uscore=(pct&&ur.ok&&ur.out!==s)?Math.min(75,45+pct*10):0;if(uscore)uscore+=25;R.push(["URL Encoding",Math.min(100,uscore)]);
+let b32c=s.toUpperCase().replace(/\s+/g,"").replace(/=+$/,""),br=safe(b32,s);let b32score=/^[A-Z2-7]+$/.test(b32c)&&b32c.length>=4&&br.ok?50:0;if(b32score&&/=+$/.test(compact))b32score+=8;if(b32score)b32score+=Math.round(32*printableScore(br.out));R.push(["Base32",Math.min(100,b32score)]);
+let bg=s.trim().split(/[\s,]+/).filter(Boolean),joined=bg.join("");let binsyntax=(bg.every(x=>/^[01]{8}$/.test(x))||(bg.length===1&&/^[01]+$/.test(joined)&&joined.length>=8&&joined.length%8===0));let bir=safe(bin,s),biscore=(binsyntax&&bir.ok)?70:0;if(biscore)biscore+=Math.round(30*printableScore(bir.out));R.push(["Binary",Math.min(100,biscore)]);
+let dg=s.trim().split(/[\s,]+/).filter(Boolean),dr=safe(dec,s);let dsyntax=dg.length>1&&dg.every(x=>/^\d{1,3}$/.test(x)&&+x<=255);let dscore=(dsyntax&&dr.ok)?65:0;if(dscore)dscore+=Math.round(35*printableScore(dr.out));R.push(["ASCII Decimal",Math.min(100,dscore)]);
+let entities=(s.match(/&(?:#\d+|#x[0-9a-f]+|[a-z][a-z0-9]+);/gi)||[]).length;R.push(["HTML Entities",entities?Math.min(100,65+entities*10):0]);let rr=rot(s),words=(rr.match(/\b[a-zA-Z]{3,}\b/g)||[]).length;R.push(["ROT13",/^[A-Za-z\s.,!?'"-]+$/.test(s)&&words?Math.min(55,15+words*5):0]);return R.sort((a,b)=>b[1]-a[1])}
+function renderDetection(){let r=scores(I.value),box=$("detect");if(!r.length){box.innerHTML="Paste input to analyze likely encoding.";return}let top=r[0];let rows=r.map(([n,v])=>`<div style="display:grid;grid-template-columns:130px 1fr 48px;gap:8px;align-items:center;margin:6px 0"><span>${n}</span><div style="height:8px;background:#090d12;border:1px solid #2a3542;border-radius:8px;overflow:hidden"><div style="height:100%;width:${v}%;background:#98a8b8"></div></div><span>${v}%</span></div>`).join("");let verdict=top[1]===0?`<div style="margin-bottom:10px"><b>Encoding: Unknown</b> • No confident match</div><div style="margin-bottom:10px;font-size:12px">No supported encoding passed the current detection rules. Do not guess; inspect the input or try another analysis method.</div>`:`<div style="margin-bottom:10px"><b>Most likely: ${top[0]}</b> • Confidence ${top[1]}%</div>`;box.innerHTML=`${verdict}${rows}<div style="margin-top:10px;font-size:12px">Heuristic confidence only. A high score is a clue, not proof. Analyst chooses the decoder.</div>`}
+I.addEventListener("input",renderDetection);
+let history=[];function esc(s){return s.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}function preview(s,n=90){s=s.replace(/\r?\n/g," ↵ ");return s.length>n?s.slice(0,n)+"…":s}
+function renderHistory(){let box=$("history");if(!history.length){box.innerHTML='<div class="muted">No decode steps yet.</div>';return}box.innerHTML=history.map((h,idx)=>`<div class="history-item"><b>Layer ${idx+1}</b><div class="history-meta">Detected: ${esc(h.detected)} • Decoder used: ${esc(h.decoder)}</div><div class="history-preview"><span class="muted">Input:</span> ${esc(preview(h.input))}</div><div class="history-preview"><span class="muted">Output:</span> ${esc(preview(h.output))}</div><button data-restore="${idx}">Restore this step</button></div>`).join("");box.querySelectorAll("[data-restore]").forEach(b=>b.onclick=()=>{let h=history[+b.dataset.restore];I.value=h.input;O.value=h.output;D.value=h.decoderValue;renderDetection();S.textContent="Restored Layer "+(+b.dataset.restore+1)+" from Decode Track.";S.className="status"})}
+function detectionSnapshot(){let r=scores(I.value);return !r.length||r[0][1]===0?"Unknown":`${r[0][0]} ${r[0][1]}%`}
+const F={b64,hex,url,b32,bin,dec,rot,html};
+$("go").onclick=()=>{try{let input=I.value,decoder=D.options[D.selectedIndex].text,decoderValue=D.value,detected=detectionSnapshot();O.value=F[D.value](input);history.push({input,output:O.value,decoder,decoderValue,detected});renderHistory();S.textContent="Decoded successfully with "+decoder+". Added to Decode Track.";S.className="status ok"}catch(e){O.value="";S.textContent="Error: "+e.message;S.className="status err"}};
+$("swap").onclick=()=>{if(!O.value){S.textContent="Nothing in Output to move.";S.className="status err";return}I.value=O.value;O.value="";renderDetection();S.textContent="Output moved to Input and encoding detection refreshed.";S.className="status"};
+$("clear").onclick=()=>{I.value=O.value="";renderDetection();S.textContent="Input and Output cleared. Decode Track preserved.";S.className="status"};
+$("saveHistory").onclick=async()=>{if(!history.length){S.textContent="Nothing in Decode Track to save.";S.className="status err";return}let lines=["WolfDecode Decode Track","Generated locally in browser","","Successful decode steps: "+history.length,""];history.forEach((h,idx)=>{lines.push("Layer "+(idx+1),"Detected: "+h.detected,"Decoder used: "+h.decoder,"Input:",h.input,"Output:",h.output,"")});let content=lines.join("\r\n");let blob=new Blob([content],{type:"text/plain;charset=utf-8"});let filename="WolfDecode_DecodeTrack_"+new Date().toISOString().replace(/[:.]/g,"-")+".txt";if(typeof window.showSaveFilePicker==="function"){try{let handle=await window.showSaveFilePicker({suggestedName:filename,types:[{description:"Text file",accept:{"text/plain":[".txt"]}}]});let writable=await handle.createWritable();await writable.write(blob);await writable.close();S.textContent="Decode Track saved locally as .txt.";S.className="status ok";return}catch(e){if(e&&e.name==="AbortError"){S.textContent="Save cancelled.";S.className="status";return}}}try{let a=document.createElement("a");a.href="data:text/plain;charset=utf-8,"+encodeURIComponent(content);a.download=filename;a.style.display="none";document.body.appendChild(a);a.dispatchEvent(new MouseEvent("click",{view:window,bubbles:true,cancelable:true}));a.remove();S.textContent="Save request sent to your browser. Check the browser Downloads list if no Save As window appears.";S.className="status ok"}catch(e){S.textContent="Unable to start the local .txt save. Browser blocked the download.";S.className="status err"}};
+$("clearHistory").onclick=()=>{history=[];renderHistory();S.textContent="Decode Track cleared.";S.className="status"};renderHistory();
+</script></main></body></html>
